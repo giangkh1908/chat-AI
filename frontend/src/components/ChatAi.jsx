@@ -16,8 +16,8 @@ const ChatAi = () => {
   const textareaRef = useRef(null);
 
   // API base URL - đổi theo port backend của bạn
-  const BASE_URL = import.meta.env.MODE === "development" ? "http://localhost:5000" : "/api";
-  
+  const BASE_URL = import.meta.env.MODE === "development" ? "http://localhost:5000" : "";
+
    const API_BASE_URL = BASE_URL;
 
   const scrollToBottom = () => {
