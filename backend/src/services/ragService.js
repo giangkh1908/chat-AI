@@ -30,6 +30,7 @@ export class RagService {
       model,
       apiKey: process.env.GOOGLE_API_KEY,
       temperature,
+      maxOutputTokens: 500,
     });
 
     // Sử dụng MMR search với lambda = 0.5
@@ -37,20 +38,23 @@ export class RagService {
       k: kDocuments, 
       searchType: "mmr",
       searchKwargs: {
-        lambda: 0.5, // Cân bằng giữa relevance và diversity
-        fetchK: kDocuments * 2 // Fetch nhiều candidates hơn để MMR có thể chọn
+        lambda: 0.5,
+        fetchK: kDocuments * 2
       }
     });
 
     const prompt = ChatPromptTemplate.fromTemplate(`
-Bạn là một AI assistant thông minh, trả lời câu hỏi dựa trên thông tin được cung cấp.
-
-Thông tin tham khảo:
+Bạn là một AI assistant thông minh và hữu ích. Hãy trả lời câu hỏi dựa trên thông tin được cung cấp.
 {context}
 
 Câu hỏi: {input}
 
-Hãy trả lời câu hỏi một cách chính xác và chi tiết bằng tiếng Việt. Nếu không tìm thấy thông tin liên quan, hãy nói "Tôi không tìm thấy thông tin để trả lời câu hỏi này."
+Hướng dẫn trả lời:
+- Trả lời bằng tiếng Việt một cách tự nhiên và dễ hiểu
+- Sử dụng câu văn hoàn chỉnh, không dùng ký hiệu đặc biệt như *, -, #
+- Trình bày thông tin một cách mạch lạc và súc tích
+- Nếu có nhiều điểm, hãy viết thành đoạn văn liền mạch thay vì danh sách
+- Nếu không tìm thấy thông tin liên quan, hãy nói "Tôi không tìm thấy thông tin để trả lời câu hỏi này."
 
 Trả lời:
     `);
@@ -65,10 +69,34 @@ Trả lời:
     console.log("✅ RAG service initialized with MMR search (lambda=0.5)");
   }
 
+  // Hàm xử lý và làm sạch response
+  formatResponse(text) {
+    return text
+      // Xóa markdown formatting
+      .replace(/\*\*(.*?)\*\*/g, '$1') // Bold **text** -> text
+      .replace(/\*(.*?)\*/g, '$1')     // Italic *text* -> text  
+      .replace(/#{1,6}\s/g, '')        // Headers # -> ""
+      .replace(/`(.*?)`/g, '$1')       // Code `text` -> text
+      .replace(/^\s*[\*\-\+]\s/gm, '') // List bullets -> ""
+      .replace(/^\s*\d+\.\s/gm, '')    // Numbered lists -> ""
+      
+      // Xử lý line breaks
+      .replace(/\n\s*\n/g, '. ')       // Double line breaks -> ". "
+      .replace(/\n/g, ' ')             // Single line breaks -> space
+      
+      // Clean up spacing
+      .replace(/\s+/g, ' ')            // Multiple spaces -> single space
+      .trim();                         // Remove leading/trailing spaces
+  }
+
   async query(question) {
     if (!this.chain) throw new Error("Chain not initialized!");
 
     const result = await this.chain.invoke({ input: question });
-    return result.answer;
+    
+    // Format response để loại bỏ markdown và ký hiệu đặc biệt
+    const cleanAnswer = this.formatResponse(result.answer);
+    
+    return cleanAnswer;
   }
 }

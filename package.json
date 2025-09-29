@@ -17,5 +17,8 @@
   "bugs": {
     "url": "https://github.com/giangkh1908/chat-AI/issues"
   },
-  "homepage": "https://github.com/giangkh1908/chat-AI#readme"
+  "homepage": "https://github.com/giangkh1908/chat-AI#readme",
+  "dependencies": {
+    "langchain": "^0.3.34"
+  }
 }

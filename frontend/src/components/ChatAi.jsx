@@ -6,7 +6,7 @@ const ChatAi = () => {
     {
       id: 1,
       type: 'assistant',
-      content: 'Xin chào! Tôi là AI assistant. Tôi có thể giúp gì cho bạn hôm nay?',
+      content: 'Xin chào! Tôi là AI thời đại mới. Tôi có thể giúp gì cho bạn hôm nay?',
       timestamp: new Date()
     }
   ]);
