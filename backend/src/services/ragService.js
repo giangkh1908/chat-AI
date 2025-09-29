@@ -11,7 +11,7 @@ export class RagService {
     this.db = null;
   }
 
-  async initRetriever({ model = "gemini-2.0-flash-exp", temperature = 0.3, kDocuments = 5, searchType = "similarity" }) {
+  async initRetriever({ model = "gemini-2.0-flash-exp", temperature = 0.6, kDocuments = 5, searchType = "mmr" }) {
     const collection = await getCollection();
 
     const embedding = new GoogleGenerativeAIEmbeddings({
@@ -32,7 +32,15 @@ export class RagService {
       temperature,
     });
 
-    const retriever = this.db.asRetriever({ k: kDocuments, searchType });
+    // Sử dụng MMR search với lambda = 0.5
+    const retriever = this.db.asRetriever({ 
+      k: kDocuments, 
+      searchType: "mmr",
+      searchKwargs: {
+        lambda: 0.5, // Cân bằng giữa relevance và diversity
+        fetchK: kDocuments * 2 // Fetch nhiều candidates hơn để MMR có thể chọn
+      }
+    });
 
     const prompt = ChatPromptTemplate.fromTemplate(`
 Bạn là một AI assistant thông minh, trả lời câu hỏi dựa trên thông tin được cung cấp.
@@ -53,6 +61,8 @@ Trả lời:
       combineDocsChain,
       retriever,
     });
+
+    console.log("✅ RAG service initialized with MMR search (lambda=0.5)");
   }
 
   async query(question) {
