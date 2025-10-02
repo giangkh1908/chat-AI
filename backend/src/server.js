@@ -24,7 +24,10 @@ app.use(cors({ origin: "*" }));
 
 // Routes
 app.use("/api/rag", ragRoutes);
-
+// ✅ Health check route
+app.get("/", (req, res) => {
+  res.send("✅ Backend is running successfully on Vercel!");
+});
 // Start server
 app.listen(PORT, async () => {
   console.log("🚀 Server is running on port 5000");
