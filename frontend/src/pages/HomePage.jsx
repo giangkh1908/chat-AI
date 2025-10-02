@@ -17,8 +17,8 @@ const HomePage = () => {
                 <div className="w-full max-w-2xl p-6 mx-auto space-y-6">
                     {/* Đầu Trang */}
                     <Header />
-                    {/* Chat AI */}
-                    <ChatAi />
+                    {/* Chat AI
+                    <ChatAi /> */}
                 </div>
             </div>
         </div>

@@ -126,9 +126,9 @@ const ChatAi = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50 overflow-hidden">
+    <div className="flex flex-col h-full w-full bg-gray-50 ">
       {/* Header */}
-      <div className="flex-shrink-0 h-16 border-b border-gray-200 bg-white px-4 md:px-6 flex items-center justify-between">
+      <div className="flex-shrink-0 h-12 border-b border-gray-200 bg-white px-3 flex items-center justify-between text-sm">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg flex items-center justify-center">
             <Sparkles className="w-5 h-5 text-white" />
@@ -143,7 +143,7 @@ const ChatAi = () => {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 min-h-0 overflow-y-auto">
         <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
           {messages.map((message) => (
             <div
@@ -164,13 +164,13 @@ const ChatAi = () => {
                 } max-w-xl md:max-w-2xl`}
               >
                 <div
-                  className={`rounded-2xl px-4 py-3 ${
+                  className={`rounded-xl px-3 py-2 text-sm ${
                     message.type === "user"
                       ? "bg-blue-600 text-white"
                       : "bg-white border border-gray-200 text-gray-800 shadow-sm"
                   }`}
                 >
-                  <p className="text-sm md:text-base leading-relaxed whitespace-pre-wrap">
+                  <p className="text-xs md:text-sm leading-relaxed whitespace-pre-wrap">
                     {message.content}
                   </p>
                 </div>
@@ -227,12 +227,12 @@ const ChatAi = () => {
               onKeyDown={handleKeyPress}
               placeholder="Nhập tin nhắn..."
               rows="1"
-              className="flex-1 bg-transparent resize-none outline-none text-gray-900 placeholder-gray-400 py-2 max-h-32 text-sm md:text-base"
+              className="flex-1 bg-transparent resize-none outline-none text-gray-900 placeholder-gray-400 py-1 max-h-28 text-xs md:text-sm"
             />
             <button
               onClick={handleSend}
               disabled={!input.trim()}
-              className="flex-shrink-0 w-9 h-9 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white rounded-full flex items-center justify-center transition-colors disabled:cursor-not-allowed"
+              className="flex-shrink-0 w-8 h-8 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white rounded-full flex items-center justify-center transition-colors disabled:cursor-not-allowed"
             >
               <Send className="w-4 h-4" />
             </button>
