@@ -38,7 +38,7 @@ export class RagService {
       model,
       apiKey: process.env.GOOGLE_API_KEY,
       temperature,
-      maxOutputTokens: 500,
+      maxOutputTokens: 1048,
     });
 
     // Sử dụng MMR search với lambda = 0.5
@@ -60,6 +60,7 @@ Hướng dẫn trả lời:
 - Sử dụng câu văn hoàn chỉnh, không dùng ký hiệu đặc biệt như *, -, #
 - Trình bày thông tin một cách mạch lạc và súc tích
 - Nếu có nhiều điểm, hãy viết thành đoạn văn liền mạch thay vì danh sách
+- Hãy trả lời tối đa trong 5 đoạn văn, không vượt quá 1000 từ
 - Nếu không tìm thấy thông tin liên quan, hãy nói "Tôi không tìm thấy thông tin để trả lời câu hỏi này."
 
 Trả lời:
