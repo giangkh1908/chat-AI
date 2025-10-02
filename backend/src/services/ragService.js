@@ -1,4 +1,7 @@
-import { GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI } from "@langchain/google-genai";
+import {
+  GoogleGenerativeAIEmbeddings,
+  ChatGoogleGenerativeAI,
+} from "@langchain/google-genai";
 import { MongoDBAtlasVectorSearch } from "@langchain/mongodb";
 import { createStuffDocumentsChain } from "langchain/chains/combine_documents";
 import { createRetrievalChain } from "langchain/chains/retrieval";
@@ -11,7 +14,12 @@ export class RagService {
     this.db = null;
   }
 
-  async initRetriever({ model = "gemini-2.0-flash-exp", temperature = 0.6, kDocuments = 5, searchType = "mmr" }) {
+  async initRetriever({
+    model = "gemini-2.0-flash-exp",
+    temperature = 0.6,
+    kDocuments = 5,
+    searchType = "mmr",
+  }) {
     const collection = await getCollection();
 
     const embedding = new GoogleGenerativeAIEmbeddings({
@@ -34,13 +42,11 @@ export class RagService {
     });
 
     // Sử dụng MMR search với lambda = 0.5
-    const retriever = this.db.asRetriever({ 
-      k: kDocuments, 
-      searchType: "mmr",
-      searchKwargs: {
-        lambda: 0.5,
-        fetchK: kDocuments * 2
-      }
+    const retriever = this.db.asRetriever({
+      k: kDocuments,
+      searchType,
+      searchKwargs:
+        searchType === "mmr" ? { lambda: 0.5, fetchK: kDocuments * 2 } : {},
     });
 
     const prompt = ChatPromptTemplate.fromTemplate(`
@@ -71,32 +77,49 @@ Trả lời:
 
   // Hàm xử lý và làm sạch response
   formatResponse(text) {
-    return text
-      // Xóa markdown formatting
-      .replace(/\*\*(.*?)\*\*/g, '$1') // Bold **text** -> text
-      .replace(/\*(.*?)\*/g, '$1')     // Italic *text* -> text  
-      .replace(/#{1,6}\s/g, '')        // Headers # -> ""
-      .replace(/`(.*?)`/g, '$1')       // Code `text` -> text
-      .replace(/^\s*[\*\-\+]\s/gm, '') // List bullets -> ""
-      .replace(/^\s*\d+\.\s/gm, '')    // Numbered lists -> ""
-      
-      // Xử lý line breaks
-      .replace(/\n\s*\n/g, '. ')       // Double line breaks -> ". "
-      .replace(/\n/g, ' ')             // Single line breaks -> space
-      
-      // Clean up spacing
-      .replace(/\s+/g, ' ')            // Multiple spaces -> single space
-      .trim();                         // Remove leading/trailing spaces
+    return (
+      text
+        // Xóa markdown formatting
+        .replace(/\*\*(.*?)\*\*/g, "$1") // Bold **text** -> text
+        .replace(/\*(.*?)\*/g, "$1") // Italic *text* -> text
+        .replace(/#{1,6}\s/g, "") // Headers # -> ""
+        .replace(/`(.*?)`/g, "$1") // Code `text` -> text
+        .replace(/^\s*[\*\-\+]\s/gm, "") // List bullets -> ""
+        .replace(/^\s*\d+\.\s/gm, "") // Numbered lists -> ""
+
+        // Xử lý line breaks
+        .replace(/\n\s*\n/g, ". ") // Double line breaks -> ". "
+        .replace(/\n/g, " ") // Single line breaks -> space
+
+        // Clean up spacing
+        .replace(/\s+/g, " ") // Multiple spaces -> single space
+        .trim()
+    ); // Remove leading/trailing spaces
   }
 
-  async query(question) {
+  async queryStream(question, res) {
     if (!this.chain) throw new Error("Chain not initialized!");
 
-    const result = await this.chain.invoke({ input: question });
-    
-    // Format response để loại bỏ markdown và ký hiệu đặc biệt
-    const cleanAnswer = this.formatResponse(result.answer);
-    
-    return cleanAnswer;
+    // Bước 1: Thu thập toàn bộ response từ LLM
+    let fullAnswer = "";
+    const result = await this.chain.stream({ input: question });
+
+    for await (const chunk of result) {
+      if (chunk?.answer) {
+        fullAnswer += chunk.answer;
+      }
+    }
+
+    // Bước 2: Format lại cho sạch sẽ
+    const cleanAnswer = this.formatResponse(fullAnswer);
+
+    // Bước 3: Stream từng từ ra client
+    const words = cleanAnswer.split(/\s+/);
+    for (const w of words) {
+      res.write(w + " ");
+      await new Promise((resolve) => setTimeout(resolve, 30)); // optional: delay 30ms để giống typing
+    }
+
+    res.end();
   }
 }
