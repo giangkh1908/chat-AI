@@ -16,7 +16,7 @@ const ChatAi = () => {
   const textareaRef = useRef(null);
 
   // API base URL - đổi theo port backend của bạn
-  const BASE_URL = import.meta.env.MODE === "development" ? "http://localhost:5000" : "https://chat-ai-backend-silk.vercel.app/";
+  const BASE_URL = import.meta.env.MODE === "development" ? "http://localhost:5000" : "https://chat-ai-backend-silk.vercel.app";
 
    const API_BASE_URL = BASE_URL;
 
