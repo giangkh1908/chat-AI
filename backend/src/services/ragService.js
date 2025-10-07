@@ -6,7 +6,7 @@ import { MongoDBAtlasVectorSearch } from "@langchain/mongodb";
 import { createStuffDocumentsChain } from "langchain/chains/combine_documents";
 import { createRetrievalChain } from "langchain/chains/retrieval";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
-import { getCollection } from "../utils/db.js";
+import { getCollection } from "../config/db.js";
 
 export class RagService {
   constructor() {

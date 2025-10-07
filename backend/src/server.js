@@ -1,8 +1,9 @@
 import express from "express";
+import { connectDB } from "./config/db.js";
 import cors from "cors";
 import dotenv from "dotenv";
 import ragRoutes from "./routes/ragRoutes.js";
-import { testConnection } from "./utils/db.js";
+import userRoutes from "./routes/userRoutes.js";
 import path from "path";
 
 const PORT = process.env.PORT || 5000;
@@ -19,8 +20,7 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
-
-
+connectDB();
 
 // if (process.env.NODE_ENV === "production") {
 //   app.use(express.static(path.join(__dirname, "../frontend/dist")));
@@ -32,6 +32,7 @@ app.use(
 
 // Routes
 app.use("/api/rag", ragRoutes);
+app.use("/api/users", userRoutes);
 // ✅ Health check route
 app.get("/", (req, res) => {
   res.send("✅ Backend is running successfully on Vercel!");
@@ -40,5 +41,4 @@ app.get("/", (req, res) => {
 app.listen(PORT, async () => {
   console.log("🚀 Server is running on port 5000");
   console.log("🔄 Testing database connection...");
-  await testConnection();
 });
